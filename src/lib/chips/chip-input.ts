@@ -7,11 +7,12 @@
  */
 
 import {coerceBooleanProperty} from '@angular/cdk/coercion';
-import {Directive, ElementRef, EventEmitter, Inject, Input, OnChanges, Output} from '@angular/core';
+import {Directive, ElementRef, EventEmitter, Inject, Input, OnChanges, Output, Self, Optional} from '@angular/core';
 import {hasModifierKey} from '@angular/cdk/keycodes';
 import {MAT_CHIPS_DEFAULT_OPTIONS, MatChipsDefaultOptions} from './chip-default-options';
 import {MatChipList} from './chip-list';
 import {MatChipTextControl} from './chip-text-control';
+import { NgControl } from '@angular/forms';
 
 
 /** Represents an input event on a `matChipInput`. */
@@ -50,15 +51,6 @@ export class MatChipInput implements MatChipTextControl, OnChanges {
   focused: boolean = false;
   _chipList: MatChipList;
 
-  /** Register input for chip list */
-  @Input('matChipInputFor')
-  set chipList(value: MatChipList) {
-    if (value) {
-      this._chipList = value;
-      this._chipList.registerInput(this);
-    }
-  }
-
   /**
    * Whether or not the chipEnd event will be emitted when the input is blurred.
    */
@@ -87,9 +79,21 @@ export class MatChipInput implements MatChipTextControl, OnChanges {
 
   /** Whether the input is disabled. */
   @Input()
-  get disabled(): boolean { return this._disabled || (this._chipList && this._chipList.disabled); }
+  get disabled(): boolean { 
+      return this._disabled; 
+        // || (this._chipList && this._chipList.disabled)
+    }
   set disabled(value: boolean) { this._disabled = coerceBooleanProperty(value); }
   private _disabled: boolean = false;
+
+    /** Register input for chip list */
+    @Input('matChipInputFor')
+    set chipList(value: MatChipList) {
+        if (value) {
+        this._chipList = value;
+        this._chipList.registerInput(this);
+        }
+    }
 
   /** Whether the input is empty. */
   get empty(): boolean { return !this._inputElement.value; }
@@ -99,7 +103,8 @@ export class MatChipInput implements MatChipTextControl, OnChanges {
 
   constructor(
     protected _elementRef: ElementRef<HTMLInputElement>,
-    @Inject(MAT_CHIPS_DEFAULT_OPTIONS) private _defaultOptions: MatChipsDefaultOptions) {
+    @Inject(MAT_CHIPS_DEFAULT_OPTIONS) private _defaultOptions: MatChipsDefaultOptions,
+    @Optional() @Inject(NgControl) @Self() public ngControl: NgControl) {
     this._inputElement = this._elementRef.nativeElement as HTMLInputElement;
   }
 

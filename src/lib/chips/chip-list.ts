@@ -264,12 +264,16 @@ export class MatChipList extends _MatChipListMixinBase implements MatFormFieldCo
    * @docs-private
    */
   @Input()
-  get disabled(): boolean { return this.ngControl ? !!this.ngControl.disabled : this._disabled; }
+  get disabled(): boolean { 
+    //   return this.ngControl ? !!this.ngControl.disabled : 
+      return this._disabled || (this._chipInput && this._chipInput.disabled); 
+    }
   set disabled(value: boolean) {
-    this._disabled = coerceBooleanProperty(value);
-    this._syncChipsDisabledState();
-  }
-  protected _disabled: boolean = false;
+      this._disabled = coerceBooleanProperty(value);
+      this._syncChipsDisabledState();
+    }
+    //   get disabled(): boolean { return this.ngControl ? !!this.ngControl.disabled : this._disabled; }
+    protected _disabled: boolean = false;
 
   /** Orientation of the chip list. */
   @Input('aria-orientation') ariaOrientation: 'horizontal' | 'vertical' = 'horizontal';
@@ -344,6 +348,9 @@ export class MatChipList extends _MatChipListMixinBase implements MatFormFieldCo
   }
 
   ngAfterContentInit() {
+    if (this.disabled) {
+        this.setDisabledState(this.disabled);
+    }
     this._keyManager = new FocusKeyManager<MatChip>(this.chips)
       .withWrap()
       .withVerticalOrientation()
@@ -415,7 +422,7 @@ export class MatChipList extends _MatChipListMixinBase implements MatFormFieldCo
 
   /** Associates an HTML input element with this chip list. */
   registerInput(inputElement: MatChipTextControl): void {
-    this._chipInput = inputElement;
+    this._chipInput = inputElement;  
   }
 
   /**
@@ -442,9 +449,12 @@ export class MatChipList extends _MatChipListMixinBase implements MatFormFieldCo
   }
 
   // Implemented as part of ControlValueAccessor.
-  setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled;
-    this.stateChanges.next();
+  public setDisabledState(isDisabled: boolean): void {
+    // this.disabled = isDisabled;
+    if (isDisabled) {
+        this._syncChipsDisabledState();
+        this.stateChanges.next();
+    }
   }
 
   /**

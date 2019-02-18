@@ -1,3 +1,5 @@
+import { NgControl } from "@angular/forms";
+
 /**
  * @license
  * Copyright Google LLC All Rights Reserved.
@@ -20,6 +22,10 @@ export interface MatChipTextControl {
 
   /** Whether the text control is empty. */
   empty: boolean;
+
+  disabled: boolean;
+
+  ngControl: NgControl;
 
   /** Focuses the text control. */
   focus(): void;
