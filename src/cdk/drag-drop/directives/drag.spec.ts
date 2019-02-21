@@ -461,6 +461,25 @@ describe('CdkDrag', () => {
       expect(element.classList).not.toContain('cdk-drag-dragging');
     }));
 
+    it('should add a class while an element is being dragged with OnPush change detection',
+      fakeAsync(() => {
+        const fixture = createComponent(StandaloneDraggableWithOnPush);
+        fixture.detectChanges();
+
+        const element = fixture.componentInstance.dragElement.nativeElement;
+
+        expect(element.classList).not.toContain('cdk-drag-dragging');
+
+        startDraggingViaMouse(fixture, element);
+
+        expect(element.classList).toContain('cdk-drag-dragging');
+
+        dispatchMouseEvent(document, 'mouseup');
+        fixture.detectChanges();
+
+        expect(element.classList).not.toContain('cdk-drag-dragging');
+      }));
+
     it('should not add a class if item was not dragged more than the threshold', fakeAsync(() => {
       const fixture = createComponent(StandaloneDraggable, [], 5);
       fixture.detectChanges();
@@ -536,8 +555,12 @@ describe('CdkDrag', () => {
       fixture.detectChanges();
       const dragElement = fixture.componentInstance.dragElement.nativeElement;
 
-      fixture.componentInstance.dragInstance.disabled = true;
+      expect(dragElement.classList).not.toContain('cdk-drag-disabled');
 
+      fixture.componentInstance.dragInstance.disabled = true;
+      fixture.detectChanges();
+
+      expect(dragElement.classList).toContain('cdk-drag-disabled');
       expect(dragElement.style.transform).toBeFalsy();
       dragElementViaMouse(fixture, dragElement, 50, 100);
       expect(dragElement.style.transform).toBeFalsy();
@@ -2115,9 +2138,14 @@ describe('CdkDrag', () => {
       const fixture = createComponent(DraggableInDropZone);
       fixture.detectChanges();
       const dragItems = fixture.componentInstance.dragItems;
+      const dropElement = fixture.componentInstance.dropInstance.element.nativeElement;
+
+      expect(dropElement.classList).not.toContain('cdk-drop-list-disabled');
 
       fixture.componentInstance.dropInstance.disabled = true;
+      fixture.detectChanges();
 
+      expect(dropElement.classList).toContain('cdk-drop-list-disabled');
       expect(dragItems.map(drag => drag.element.nativeElement.textContent!.trim()))
           .toEqual(['Zero', 'One', 'Two', 'Three']);
 
@@ -2819,6 +2847,17 @@ class StandaloneDraggable {
   endedSpy = jasmine.createSpy('ended spy');
   releasedSpy = jasmine.createSpy('released spy');
   boundarySelector: string;
+}
+
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div cdkDrag #dragElement style="width: 100px; height: 100px; background: red;"></div>
+  `
+})
+class StandaloneDraggableWithOnPush {
+  @ViewChild('dragElement') dragElement: ElementRef<HTMLElement>;
+  @ViewChild(CdkDrag) dragInstance: CdkDrag;
 }
 
 @Component({
